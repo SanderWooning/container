@@ -25,20 +25,18 @@ class ContainerPlacement:
         # the memory structures that we will fill using dynamic programming (DO NOT CHANGE THESE)
         # self.empty_space[i,j] contains the empty space if we place containers[i:j+1] on a single
         # row in the harbor area (can be negative - meaning the containers don't fit)
-        self.empty_space = -1*np.ones(shape=(self.num_containers, self.num_containers))
+        self.empty_space = -1 * np.ones(shape=(self.num_containers, self.num_containers))
         # self.row_cost[i,j] is the cost of the empty spaces when placing containers[i:j+1] on a row for the solution
         self.row_cost = np.empty(shape=(self.num_containers, self.num_containers)) + float('inf')
-        
 
         # The memory structure we use to compute the minimum cost solution
         # it has shape (num containers + 1, num cranes). After calling dynamic_programming, 
         # self.total_cost[j, x] should contain the optimal cost of placing self.contianers[:j] with cranes
         # 0,...,x 
-        self.total_cost = np.empty(shape=(self.num_containers+1, self.num_cranes))
+        self.total_cost = np.empty(shape=(self.num_containers + 1, self.num_cranes))
 
         # Data structure that can be used for the backtracing method
         self.previous_loc_memory = dict()
-
 
     def compute_empty_space(self, i: int, j: int) -> float:
         """
@@ -54,35 +52,20 @@ class ContainerPlacement:
         :return: The empty space (float) on the row if we place self.containers[i:j+1] there
         """
 
-        # print(self.containers)
-        # print(self.num_containers)
-        # print(self.num_cranes)
-        # print(self.opcost)
-        # print(i, j)
-        # print(self.width)
-        # print(self.spacing)
+        return self.empty_space[i, j - 1] - (self.spacing + self.containers[j])
 
-        print(self.containers[i:j+1])
-
-        total_space = 0
-
-        for container in self.containers[i:j+1]:
-            total_space += self.containers[container - 1]
-            if self.containers.index(container) != (len(self.containers[i:j+1]) - 1):
-                total_space += self.spacing
-
-
-        return self.width - total_space
-
-
-
-        raise NotImplementedError()
-
+        #
+        # for index, container in enumerate?(self.containers[i:j + 1]):
+        #     total_space = total_space - container
+        #     if index != j - 1:
+        #         total_space = total_space - self.spacing
+        #
+        # return total_space
 
     def compute_row_cost(self, i: int, j: int, empty_space: float) -> float:
         """
         Computes the cost of the empty spaces when placing self.containers[i:j+1] on a single row on the harbor.
-        Note that we ignore the crane operation cost in this fucntion.
+        Note that we ignore the crane operation cost in this function.
         Make sure to read the entire assignment description before writing this function.
         If containers[i:j+1] do not fit on a single row, we return infinity: float("inf")
         NOTE: the final row has no cost for empty space. 
@@ -95,8 +78,23 @@ class ContainerPlacement:
         :return: The cost (float) of the row if we place self.containers[i:j+1] there
         """
 
-        raise NotImplementedError()
+        """
+        Empty row cost is Empty row ^ 5. 
+        """
 
+
+        print(self.row_cost)
+
+        if empty_space < 0:
+            return float("inf")
+
+        if len(self.containers) == j + 1:
+            return 0
+
+        return empty_space ** 5
+
+
+        raise NotImplementedError()
 
     def compute_row_opcost(self, i: int, j: int, m: int) -> float:
         """
@@ -111,8 +109,17 @@ class ContainerPlacement:
         :return: The operational cost (float) if we place self.containers[i:j+1] with crane m
         """
 
-        raise NotImplementedError()
+        print(f"Containers: {self.containers}, Opcost: {self.opcost}, Number of cranes: {self.num_cranes} ")
 
+        print(self.opcost[m])
+
+        row_cost = 0
+
+        for index in range(i,j+1):
+            print(index)
+            row_cost += self.opcost[index][m]
+
+        return row_cost
 
     def dynamic_programming(self):
         """
@@ -124,7 +131,6 @@ class ContainerPlacement:
         """
 
         raise NotImplementedError()
-            
 
     def lowest_cost(self) -> float:
         """
