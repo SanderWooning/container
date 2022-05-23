@@ -185,7 +185,7 @@ class ContainerPlacement:
                     i=0, j=container, m=crane)
 
 
-        print(f"sdlosdjaslljdoljsalidjli  {min(self.total_cost[self.total_cost.shape[0]])}")
+        print(f"sdlosdjaslljdoljsalidjli  {min(self.total_cost[3])}")
 
     def lowest_cost(self) -> float:
         """
@@ -199,9 +199,9 @@ class ContainerPlacement:
 
         self.dynamic_programming()
 
-        print(f"sdlosdjaslljdoljsalidjli  {min(self.total_cost[self.total_cost.shape[0]])}")
+        # print(f"sdlosdjaslljdoljsalidjli  {min(self.total_cost[self.total_cost.shape[0]])}")
 
-        return min(self.total_cost[self.total_cost.shape[0]])
+        return min(self.total_cost[3])
 
         # return self.total_cost_function(j=self.num_containers) + (self.num_containers * self.check_container_opcost())
 
