@@ -122,25 +122,6 @@ class ContainerPlacement:
                 self.row_cost[rows, column] = self.compute_row_cost(i=rows, j=column,
                                                                     empty_space=self.empty_space[rows, column])
 
-    def total_cost_function(self, j):
-        rowcost_new_row = self.row_cost[j][j]
-        rowcost_same_row = self.row_cost[j - 1][j]
-
-        row_cost_array = []
-        #
-        # for p range(self.num_containers):
-        #     for j in range(i, self.num_containers):
-        #         row_cost_array.append(self.compute_row_cost(i=))
-
-        print(f"New {rowcost_new_row},  same{rowcost_same_row} and i is {j}")
-
-        if j <= 0:
-            return 0
-
-        else:
-            return min(self.total_cost_function(j - 1) + rowcost_new_row,
-                       self.total_cost_function(j - 1) + rowcost_same_row)
-
     def dynamic_programming(self):
         """
         The function that uses dynamic programming to solve the problem: compute the optimal placement cost
