@@ -32,7 +32,7 @@ class ContainerPlacement:
         # The memory structure we use to compute the minimum cost solution
         # it has shape (num containers + 1, num cranes). After calling dynamic_programming, 
         # self.total_cost[j, x] should contain the optimal cost of placing self.containers[:j] with cranes
-        # 0,...,x 
+        # 0,...,x
         self.total_cost = np.empty(shape=(self.num_containers + 1, self.num_cranes))
 
         # Data structure that can be used for the backtracing method
@@ -41,9 +41,9 @@ class ContainerPlacement:
     def compute_empty_space(self, i: int, j: int) -> float:
         """
         Computes the empty space (excluding the spacing between containers) that we will have if we place
-        self.containers[i:j+1] on a single row on the harbor. Note: you can store negative values because we can assign a cost 
+        self.containers[i:j+1] on a single row on the harbor. Note: you can store negative values because we can assign a cost
         of infinity in compute_row_cost later on to make sure that we do not exceed the width of the area in a solution.
-        NOTE: make use of self.empty_space[i:j-1] (you can assume this is filled in already) 
+        NOTE: make use of self.empty_space[i:j-1] (you can assume this is filled in already)
         We also assume that i <= j when calling this function.
 
         :param i: The index of the first container that will be placed on the row
@@ -150,6 +150,12 @@ class ContainerPlacement:
         rowcost_new_row = self.row_cost[j][j]
         rowcost_same_row = self.row_cost[j - 1][j]
 
+        row_cost_array = []
+        #
+        # for p range(self.num_containers):
+        #     for j in range(i, self.num_containers):
+        #         row_cost_array.append(self.compute_row_cost(i=))
+
         print(f"New {rowcost_new_row},  same{rowcost_same_row} and i is {j}")
 
         if j <= 0:
@@ -162,7 +168,7 @@ class ContainerPlacement:
     def dynamic_programming(self):
         """
         The function that uses dynamic programming to solve the problem: compute the optimal placement cost
-        and store a solution that can be used in the backtracing function below (if you want to do that optional assignment part). 
+        and store a solution that can be used in the backtracing function below (if you want to do that optional assignment part).
         In this function, we fill the memory structures self.empty_space, self.row_cost, and self.cost making use
         of functions defined above. This function does not return anything.
         """
@@ -170,22 +176,39 @@ class ContainerPlacement:
         # print(self.opcost)
         # print(self.num_cranes)
 
-        for crane in range(self.num_cranes):
-            for container in range(self.num_containers):
-                for column in range(container, self.num_containers):
-                    self.empty_space[container][column] = self.compute_empty_space(i=container, j=column)
-                    self.row_cost[container][column] = self.compute_row_cost(i=container, j=column,
-                                                                             empty_space=self.empty_space[container][
-                                                                                 column])
+        """Intial Crane """
 
-                    # print(f"Empty Space: {self.compute_empty_space(i=container, j=column)}")
-                    # print(f"Empty Space Cost with i = {container} and j = {column}: {self.compute_row_cost(i=container, j=column,empty_space=self.compute_empty_space(i=container, j=column))}")
+        self.fill_row_cost()
 
-                self.total_cost[container + 1][crane] = self.total_cost_function(j=container) + self.compute_row_opcost(
-                    i=0, j=container, m=crane)
+        for j in range(self.num_containers + 1):
+            print("")
 
 
-        print(f"sdlosdjaslljdoljsalidjli  {min(self.total_cost[3])}")
+
+            if j == 0:
+                self.total_cost[j][0] = 0
+                print(self.total_cost)
+
+            if j >= 1:
+
+                values_array = []
+
+                for i in range(0, j):
+                    # print(self.total_cost[:j-i+1,0])
+                    # print(f"J Value: {j} and I Value: {i}")
+                    # print(self.total_cost[i,0])
+                    # print(self.row_cost[i,j-1])
+                    # print(self.total_cost[i, 0] + self.row_cost[i,j-1])
+                    # print(self.row_cost[j - i, j - 1])
+                    values_array.append(self.total_cost[i, 0] + self.row_cost[i,j-1])
+                    print(values_array)
+
+                self.total_cost[j][0] = min(values_array)
+
+
+
+
+        print(self.total_cost)
 
     def lowest_cost(self) -> float:
         """
