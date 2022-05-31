@@ -114,56 +114,12 @@ class ContainerPlacement:
 
         return row_cost
 
-    def check_container_opcost(self):
-
-        """
-        Checks if one of the
-
-        :return: The minimal value if there is
-        """
-
-        min_values = []
-
-        for container in range(self.num_containers):
-
-            container_array = []
-
-            for crane in range(self.num_cranes):
-                container_array.append(self.opcost[container][crane])
-
-            min_values.append(min(container_array))
-
-        if len(np.unique(min_values)) == 1:
-            return min_values[0]
-
-        else:
-            return None
-
     def fill_row_cost(self):
         for rows in range(self.num_containers):
             for column in range(rows, self.num_containers):
                 self.empty_space[rows, column] = self.compute_empty_space(i=rows, j=column)
                 self.row_cost[rows, column] = self.compute_row_cost(i=rows, j=column,
                                                                     empty_space=self.empty_space[rows, column])
-
-    def total_cost_function(self, j):
-        rowcost_new_row = self.row_cost[j][j]
-        rowcost_same_row = self.row_cost[j - 1][j]
-
-        row_cost_array = []
-        #
-        # for p range(self.num_containers):
-        #     for j in range(i, self.num_containers):
-        #         row_cost_array.append(self.compute_row_cost(i=))
-
-        print(f"New {rowcost_new_row},  same{rowcost_same_row} and i is {j}")
-
-        if j <= 0:
-            return 0
-
-        else:
-            return min(self.total_cost_function(j - 1) + rowcost_new_row,
-                       self.total_cost_function(j - 1) + rowcost_same_row)
 
     def dynamic_programming(self):
         """
@@ -180,15 +136,26 @@ class ContainerPlacement:
 
         self.fill_row_cost()
 
-        for j in range(self.num_containers + 1):
+        for k in range(self.num_cranes):
 
-            if j == 0:
-                self.total_cost[j][0] = 0
-                print(self.total_cost)
+            for j in range(self.num_containers + 1):
+                if j == 0:
+                    self.total_cost[j][k] = 0
 
-            if j >= 1:
-                for i in range(1, j + 1):
-                    self.total_cost[j][0] = min(self.total_cost[i:j,0]) + self.row_cost[i][j]
+                if j >= 1:
+                    values_array = []
+                    for i in range(0, j):
+                        # print(self.compute_row_opcost(i=i, j=j-1, m=k))
+                        values_array.append(self.total_cost[i, k] + self.row_cost[i, j - 1] + self.compute_row_opcost(i=i, j=j-1, m=k))
+
+                    print(values_array)
+                    if k == 0:
+                        self.total_cost[j][k] = min(values_array)
+
+                    if k > 0:
+                        self.total_cost[j][k] = min(min(values_array), self.total_cost[j][k-1])
+
+            print(self.total_cost)
 
     def lowest_cost(self) -> float:
         """
@@ -204,7 +171,7 @@ class ContainerPlacement:
 
         # print(f"sdlosdjaslljdoljsalidjli  {min(self.total_cost[self.total_cost.shape[0]])}")
 
-        return min(self.total_cost[3])
+        return np.min(self.total_cost[self.num_containers])
 
         # return self.total_cost_function(j=self.num_containers) + (self.num_containers * self.check_container_opcost())
 
