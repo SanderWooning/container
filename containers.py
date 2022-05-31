@@ -52,19 +52,13 @@ class ContainerPlacement:
         :return: The empty space (float) on the row if we place self.containers[i:j+1] there
         """
 
+        # If the starting container equal the last, then there is only one container on the row and therefore there
+        # is no spacing.
         if i == j:
             return self.width - self.containers[j]
 
         else:
             return self.empty_space[i, j - 1] - (self.spacing + self.containers[j])
-
-        #
-        # for index, container in enumerate?(self.containers[i:j + 1]):
-        #     total_space = total_space - container
-        #     if index != j - 1:
-        #         total_space = total_space - self.spacing
-        #
-        # return total_space
 
     def compute_row_cost(self, i: int, j: int, empty_space: float) -> float:
         """
@@ -82,13 +76,11 @@ class ContainerPlacement:
         :return: The cost (float) of the row if we place self.containers[i:j+1] there
         """
 
-        """
-        Empty row cost is Empty row ^ 5. 
-        """
-
+        # Harbor-width is exceeded
         if empty_space < 0:
             return float("inf")
 
+        # Last container, row-cost is 0
         if len(self.containers) == j + 1:
             return 0
 
@@ -114,48 +106,54 @@ class ContainerPlacement:
 
         return row_cost
 
-    def fill_row_cost(self):
-        for rows in range(self.num_containers):
-            for column in range(rows, self.num_containers):
-                self.empty_space[rows, column] = self.compute_empty_space(i=rows, j=column)
-                self.row_cost[rows, column] = self.compute_row_cost(i=rows, j=column,
-                                                                    empty_space=self.empty_space[rows, column])
-
     def dynamic_programming(self):
         """
         The function that uses dynamic programming to solve the problem: compute the optimal placement cost
         and store a solution that can be used in the backtracing function below (if you want to do that optional assignment part).
         In this function, we fill the memory structures self.empty_space, self.row_cost, and self.cost making use
         of functions defined above. This function does not return anything.
+
+        Steps:
+            1. Fill in the two arrays: self.empty_space and self.row_cost
+            2. Iterate over all cranes
+            3. Iterate over all containers and the base case (this is the +1).
+            4. Check if the base-case is true
+            5. If not, iterate of all possible costs and add them to an empty array.
+            6. Get the minimal cost out of the array.
+
         """
-        # print(self.empty_space)
-        # print(self.opcost)
-        # print(self.num_cranes)
 
-        """Intial Crane """
+        # Filling the empty_space and row_cost 2D-array.
+        for rows in range(self.num_containers):
+            for column in range(rows, self.num_containers):
+                self.empty_space[rows, column] = self.compute_empty_space(i=rows, j=column)
+                self.row_cost[rows, column] = self.compute_row_cost(i=rows, j=column,
+                                                                    empty_space=self.empty_space[rows, column])
 
-        self.fill_row_cost()
+        # Iterating over all cranes)
+        for crane in range(self.num_cranes):
 
-        for k in range(self.num_cranes):
+            for container in range(self.num_containers + 1):
+                if container == 0:
+                    self.total_cost[container][crane] = 0
 
-            for j in range(self.num_containers + 1):
-                if j == 0:
-                    self.total_cost[j][k] = 0
+                if container >= 1:
 
-                if j >= 1:
+                    # Initialize an empty array to put in the values with all the possible solutions.
                     values_array = []
-                    for i in range(0, j):
-                        # print(self.compute_row_opcost(i=i, j=j-1, m=k))
-                        values_array.append(self.total_cost[i, k] + self.row_cost[i, j - 1] + self.compute_row_opcost(i=i, j=j-1, m=k))
 
-                    print(values_array)
-                    if k == 0:
-                        self.total_cost[j][k] = min(values_array)
+                    for i in range(0, container):
+                        values_array.append(
+                            self.total_cost[i, crane] + self.row_cost[i, container - 1] +
+                            self.compute_row_opcost(i=i, j=container - 1, m=crane))
 
-                    if k > 0:
-                        self.total_cost[j][k] = min(min(values_array), self.total_cost[j][k-1])
+                    # If only one crane is used.
+                    if crane == 0:
+                        self.total_cost[container][crane] = min(values_array)
 
-            print(self.total_cost)
+                    # If more cranes are available.
+                    if crane > 0:
+                        self.total_cost[container][crane] = min(min(values_array), self.total_cost[container][crane - 1])
 
     def lowest_cost(self) -> float:
         """
@@ -169,11 +167,7 @@ class ContainerPlacement:
 
         self.dynamic_programming()
 
-        # print(f"sdlosdjaslljdoljsalidjli  {min(self.total_cost[self.total_cost.shape[0]])}")
-
         return np.min(self.total_cost[self.num_containers])
-
-        # return self.total_cost_function(j=self.num_containers) + (self.num_containers * self.check_container_opcost())
 
     def backtrace_solution(self) -> typing.List[int]:
         """
@@ -189,5 +183,38 @@ class ContainerPlacement:
             
         :return: A tuple (leftmost indices, crane list) as described above
         """
+
+        # Filling the empty_space and row_cost 2D-array.
+        for rows in range(self.num_containers):
+            for column in range(rows, self.num_containers):
+                self.empty_space[rows, column] = self.compute_empty_space(i=rows, j=column)
+                self.row_cost[rows, column] = self.compute_row_cost(i=rows, j=column,
+                                                                    empty_space=self.empty_space[rows, column])
+
+        # Iterating over all cranes)
+        for crane in range(self.num_cranes):
+
+            for container in range(self.num_containers + 1):
+                if container == 0:
+                    self.total_cost[container][crane] = 0
+
+                if container >= 1:
+
+                    # Initialize an empty array to put in the values with all the possible solutions.
+                    values_array = []
+
+                    for i in range(0, container):
+                        values_array.append(
+                            self.total_cost[i, crane] + self.row_cost[i, container - 1] +
+                            self.compute_row_opcost(i=i, j=container - 1, m=crane))
+
+                    # If only one crane is used.
+                    if crane == 0:
+                        self.total_cost[container][crane] = min(values_array)
+
+                    # If more cranes are available.
+                    if crane > 0:
+                        self.total_cost[container][crane] = min(min(values_array), self.total_cost[container][crane - 1])
+
 
         raise NotImplementedError()
